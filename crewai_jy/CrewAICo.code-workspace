@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"workbench.colorTheme": "City Lights",
+		"CodeGPT.apiKey": "Ollama"
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			
+
+		]
+	}
+}

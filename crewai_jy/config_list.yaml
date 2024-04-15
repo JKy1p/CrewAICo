@@ -1,0 +1,10 @@
+
+
+config_list = [
+  {
+    "model":mistral:7b-instruct",
+    "base_url": "http://localhost:11434/",
+    "api_key": "ollama"
+  }
+
+]
