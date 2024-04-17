@@ -5,7 +5,7 @@
 		}
 	],
 	"settings": {
-		"workbench.colorTheme": "MacOS Modern Dark - Xcode Modern",
+		"workbench.colorTheme": "MacOS Modern Dark - Ventura Xcode",
 		"CodeGPT.apiKey": "Ollama"
 	},
 	"launch": {

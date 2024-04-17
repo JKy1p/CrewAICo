@@ -1,78 +1,58 @@
-from functools import partial
-import ast
-from typing import Type, List, Dict, Callable, Any, Optional, Union, ClassVar
-from datetime import datetime
-import os
-from exa_py.api import Exa 
+from typing import List, TypeVar, Generic, Optional 
+import os, json
+from exa_py.api import Exa, SearchResponse
 from langchain_core.tools import tool
-from pydantic.v1 import BaseModel, Field
+from pydantic.v1 import BaseModel, Field, HttpUrl
 from crewai_tools import BaseTool
 from langsmith import traceable
 from utils.logging import debug_process_inputs
 from exa_py.api import Exa
-from models import Source
-from crewai_tools import BaseTool
-from models import Source
-import json
 
 # Define the SearchResult model
-class SearchResult(BaseModel):  
-    number: int
-    source: str
-    text: str
-    highlights: List[str]
+class SearchResult(BaseModel):
+    id: str
+    url: HttpUrl
+    title: str
+    text: Optional[str] = None
+    highlights: Optional[List[str]] = None
+    highlight_scores: Optional[List[float]] = None     
     
-    def __iter__(self):
-        """
-        Allow iteration over the model's fields, yielding key-value pairs
-        of field names and their values.
-        """
-        for field, value in self.dict().items():
-            yield (field, value)
-    
-    
+                
 class ExaSearchInput(BaseModel):
     target_account: str = Field(..., description="The target account for the search.")
     topic: str = Field(..., description="The topics of interest for the search.")
-    limit: Optional[int] = Field(default=10, description="Maximum number of results to return")
+    limit: Optional[int] = 3
 
     @property
     def query(self) -> str:
         return f"{self.target_account} {self.topic}"
 
 class ExaSearchToolset(BaseTool):
-
-    @staticmethod
     @tool
-    def search(search_input: ExaSearchInput) -> List[SearchResult]:
+    def search(search_input: ExaSearchInput) -> SearchResponse[SearchResult]: # type: ignore
         """Search for a webpage based on the query constructed from search input."""
-        query = search_input.query
-        raw_results = ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=search_input.limit)
-        return [SearchResult(**result) for result in raw_results]
+        query = search_input.query        
+        return ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=3)
 
-    @staticmethod
-    @tool
-    def find_similar(url: str) -> List[SearchResult]:
-        """
-        Search for webpages similar to a given URL.
-        The URL passed in should be a URL returned from `search`.
-        """
-        raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
-        return [SearchResult(**result) for result in raw_results]
 
-    @staticmethod
     @tool
-    def get_contents(ids: List[str]) -> str:
+    def find_similar(url: str) -> SearchResponse[SearchResult]: # type: ignore
+        """Search for webpages similar to a given URL."""
+
+        return ExaSearchToolset._exa().find_similar(url, num_results=3)
+
+    @tool
+    def get_contents(ids_str: str) -> str: # type: ignore
         """
         Get the contents of a webpage.
-        The ids must be passed in as a list, a list of ids returned from `search`.
+        The ids must be passed in as a JSON string representing a list of ids.
         """
         try:
             ids = json.loads(ids_str)  # Safely convert string to list
         except json.JSONDecodeError:
             return "Invalid input format."
 
-        contents = ExaSearchToolset._exa().get_contents(ids)
+        contents = str(ExaSearchToolset._exa().get_contents(ids))
         contents = contents.split("URL:")
         contents = [content[:1000] for content in contents]
         return "\n\n".join(contents)
