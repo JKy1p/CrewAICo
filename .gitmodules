@@ -2,3 +2,12 @@
 [submodule "external/CrewAI"]
 	path = external/CrewAI
 	url = https://github.com/joaomdmoura/crewAI.git
+
+[submodule "external/Exa"]
+    path = external/Exa
+    url = https://github.com/exa-labs/exa-py.git
+
+[submodule "nextjs_crewai"]
+    path = nextjs_crewai
+    url = https://github.com/bhancockio/nextjs-crewai-basic-tutorial.git
+	
