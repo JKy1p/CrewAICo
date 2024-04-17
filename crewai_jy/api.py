@@ -14,6 +14,7 @@ from crew import AccountResearchCrew
 from job_manager import append_event, jobs, jobs_lock, Event
 from utils.logging import logger
 from langsmith import traceable
+from utils.logging import debug_process_inputs
 import traceback
 
 
@@ -23,7 +24,7 @@ app = Flask(__name__)
 app.config['PROPAGATE_EXCEPTIONS'] = True
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@traceable
+@traceable(name="kick off crew", process_inputs=debug_process_inputs)    
 def kickoff_crew(job_id, target_account: str, topics: list[str]):
     logger.info(f"Running kickoff_crew with job_id={job_id}, target_account={target_account}, topics={topics}")
 
@@ -49,7 +50,7 @@ def kickoff_crew(job_id, target_account: str, topics: list[str]):
         jobs[job_id].events.append(
             Event(timestamp=datetime.now(), data="Crew complete"))
 
-
+@traceable(name="run crew", process_inputs=debug_process_inputs)    
 @app.route('/api/crew', methods=['POST'])
 def run_crew():
     logger.info("Received request to run crew")
@@ -68,7 +69,7 @@ def run_crew():
 
     return jsonify({"job_id": job_id}), 202
 
-
+@traceable(name="get status", process_inputs=debug_process_inputs)    
 @app.route('/api/crew/<job_id>', methods=['GET'])
 def get_status(job_id):
     with jobs_lock:

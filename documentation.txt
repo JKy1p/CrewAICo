@@ -1,0 +1,19 @@
+nextjs-crewai-basic-tutorial YouTube - https://www.youtube.com/watch?v=d8juNbo3onk&t=89s
+nextjs-crewai-basic-tutorial Github - https://github.com/bhancockio/nextjs-crewai-basic-tutorial
+CrewAI Step-by-Step | Complete Course for Beginners - https://www.youtube.com/watch?v=kBXYFaZ0EN0
+Crew AI Step-by-Step Github - https://github.com/alejandro-ao/crewai-crash-course/blob/master/src/agents.py
+Self Improving Agents Github - https://github.com/majacinka/autogen-experiments
+
+
+
+
+serper_dev_tool README - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/serper_dev_tool/README.md
+serper_dev_tool py - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/selenium_scraping_tool/selenium_scraping_tool.py
+website_search_tool README - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/website_search/README.md
+website_search_tool py - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/website_search/website_search_tool.py
+selenium_scraping_tool - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/selenium_scraping_tool/README.md
+https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/selenium_scraping_tool/selenium_scraping_tool.py
+scrape_website_tool - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/scrape_website_tool/README.md
+scrape_website_tool py - https://vscode.dev/github/bhancockio/nextjs-crewai-basic-tutorial/blob/mainib/python3.11/site-packages/crewai_tools/tools/scrape_website_tool/scrape_website_tool.py
+Use @tool with a member function? - https://github.com/langchain-ai/langchain/discussions/9404
+How to wrap an existing python function inside a custom langchain tool? - https://www.reddit.com/r/LangChain/comments/14rx0rx/how_to_wrap_an_existing_python_function_inside_a/

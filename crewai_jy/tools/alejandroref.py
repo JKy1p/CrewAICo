@@ -7,12 +7,12 @@ from langchain.agents import tool
 class ExaSearchToolset:
     
     @tool
-    def search(self, query: str):
+    def search(query: str):
         """Search for a webpage based on the query."""
         return ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=3)
 
     @tool
-    def find_similar(self, url: str):
+    def find_similar(url: str):
         """
         Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
@@ -20,7 +20,7 @@ class ExaSearchToolset:
         return ExaSearchToolset._exa().find_similar(url, num_results=3)
 
     @tool
-    def get_contents(self, ids: str):
+    def get_contents(ids: str):
         """
         Get the contents of a webpage.
         The ids must be passed in as a list, a list of ids returned from `search`.

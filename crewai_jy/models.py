@@ -1,26 +1,28 @@
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl 
 
 
-class NamedUrl(BaseModel):
-    title: str 
-    url: str 
-    year: int
-    snippet: str
+class Source(BaseModel):
+    number: int
+    source_title: str 
+    url: HttpUrl 
+    date_published: int
     
-class NamedUrlList(BaseModel):
-    id: str
-    urls: List[NamedUrl]
+class SourceInfo(BaseModel):
+    source_info_title: Source
+    highlights: List[str]
     
 class Finding(BaseModel):
-    title: str
-    source: NamedUrl
+    finding_title: str
+    text: str
     highlights: List[str]
+    finding_info: List[SourceInfo]
 
 class TopicInfo(BaseModel):
-    title: str
-    topic: List[Finding]
-    additional_sources: List[NamedUrl]
+    topic_title: str
+    text: str
+    highlights: List[str]
+    topic_info: List[Finding]
     
-class TopicInfoList(BaseModel):
-    topics: List[TopicInfo]
+# class TopicInfoList(BaseModel):
+#     topics: List[TopicInfo]

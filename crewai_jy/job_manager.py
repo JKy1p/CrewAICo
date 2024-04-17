@@ -4,6 +4,7 @@ from typing import List, Dict, Optional
 from threading import Lock
 from utils.logging import logger
 
+
 jobs_lock = Lock()
 jobs: Dict[str, "Job"] = {}
 

@@ -4,16 +4,18 @@ from langchain_openai import ChatOpenAI
 from agents import AccountResearchAgents
 from job_manager import append_event
 from tasks import AccountResearchTasks
-from crewai import Crew
+from crewai import Task, Crew
 from langsmith import traceable
+from utils.logging import debug_process_inputs
 
-@traceable(name="crew.account_research")
 class AccountResearchCrew:
     def __init__(self, job_id: str):
         self.job_id = job_id
         self.crew = None
+        self.tasks = list[Task]
         self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
 
+    @traceable(name="setup crew", run_type="chain", process_inputs=debug_process_inputs)    
     def setup_crew(self, target_account: str, topics: list[str]):
         agents = AccountResearchAgents()
         tasks = AccountResearchTasks(
@@ -23,17 +25,17 @@ class AccountResearchCrew:
             target_account, topics)
         account_researcher = agents.account_researcher()
 
-        account_research_tasks = [
+        research_account_tasks = [
             tasks.research_account(account_researcher, target_account, topics)
-            for account in target_account
+            for topic in topics
         ]
 
         review_research_task = tasks.review_research(
-            research_reviewer, target_account, topics, account_research_tasks)
+            research_reviewer, target_account, topics, research_account_tasks)  # Added closing parenthesis here
 
         self.crew = Crew(
             agents=[research_reviewer, account_researcher],
-            tasks=[*account_research_tasks, review_research_task],
+            tasks=[*research_account_tasks, review_research_task],
             verbose=2,
         )
 

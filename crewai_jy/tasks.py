@@ -1,57 +1,127 @@
 from crewai import Task, Agent
 from textwrap import dedent
-
 from job_manager import append_event
-from models import Finding, NamedUrl, TopicInfo
-from utils.logging import logger
+from models import SourceInfo, Finding, TopicInfo
+from utils.logging import logger, debug_process_inputs
 from langsmith import wrappers,traceable
 
+
+# class Feedback:
+#     def __init__(self, feedback: str):
+#         self.feedback = feedback
 @traceable
 class AccountResearchTasks():
 
     def __init__(self, job_id):
         self.job_id = job_id
+        self.sourceinfo = SourceInfo
+        self.finding = Finding
+        self.TopicInfo = TopicInfo
+
 
     def append_event_callback(self, task_output):
         logger.info("Callback called: %s", task_output)
         append_event(self.job_id, task_output.exported_output)
     
-    @traceable(name="task.review_research")
+    @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
     def review_research(self, agent: Agent, target_account: str, topics: list[str], tasks: list[Task]):
-        return Task(
+        return Task(            
             description=dedent(f"""
-                You will put together a JSON object on the {target_account} for each of the {topics}. Review the provided URLs, ranking them based 
-                on how well they align with the {target_account} and research objective {topics}. Work closely with the researcher to refine this list, 
-                recommending specific URLs that are prime candidates for data scraping. Prioritize foundational data (official company publications) 
-                then expand to include external analysis and perspectives (industry analysis platforms, business news outlets). Streamline collection 
-                of 'findings' by advising on crucial content for JSON inclusion ensuring alignment with research themes. Provide clear directions for 
-                extracting relevant information from selected URLs.  
+                Review and refine a comprehensive 'TopicInfo' JSON object for the {target_account} for each specified of the {topics}. 
+                Evaluate sourceinfo and highlights collected by the Account Researcher to ensure alignment with strategic research objectives.
+                
+                Action Items:
+                - Prioritize recent and credible sources such as official company websites, annual reports, and relevant press releases.
+                - Suggest secondary sources like industry analyses and business news for broader context.
+                - Rank all sources based on their relevance to the research objectives.
+                - Provide clear, actionable feedback to refine the researcher's approach.
                 """),
             agent=agent,
             expected_output=dedent(
-                """A JSON object containing the 'target_account', 'topics', and 'findings' each with the source URLs."""),
+                """A 'TopicInfo' JSON object compiled as a list of 'Finding' JSON objects, each meticulously evaluated for relevance 
+                and accuracy."""),
             callback=self.append_event_callback,
             context=tasks,
-            output_json=TopicInfo
+            output_json=self.TopicInfo
         )
 
-    @traceable(name="task.account_research")
+    @traceable(name="research account", run_type="retriever", process_inputs=debug_process_inputs)    
     def research_account(self, agent: Agent, target_account: str, topics: list[str]):
         return Task(
             description=dedent(f"""
-                You will produce list of 'findings' by performing research on specified {target_account} for each of the {topics}. Identify and list 
-                the most relevant URLs for each topic, providing these to the Research Reviewer. Based on feedback, either extract specific 
-                text from chosen URLs or gather more sources for evaluation. Compile and return the 'finding' in a JSON object format.
+                Conduct in-depth research and create detailed 'finding' JSON objects for the {target_account} and each of the 
+                specified research {topics}. The task is segmented into three phases: Initial Research, Follow-up Based on Feedback, 
+                and Compilation of 'Finding' JSON Objects.
                 
-                Important:
-                - Once you've collected the information, immediately stop searching and promptly report back to the research reviewer for further instructions.
-                - Only return the requested information. NOTHING ELSE!
-                - Ensure the source URLs for all information is included using the format 'title, URL, year' for each finding.
-                - Do not generate fake information. Only return the information you find. Nothing else!
+                Action Items:
+                1. Initial Research:
+                - Identify and gather 'sourceinfo' with relevant information to the research topics.
+                - Submit for preliminary review.
+                2. Follow-up Based on Feedback:
+                - Enhance data depth based on feedback adjusting your research approach 
+                - Collect more targeted data with enriched data details and submit for review.
+                3. Compilation of 'Finding' JSON Objects:
+                - Compile the final findings into comprehensive JSON objects.
+                - 'Finding' JSON object includes essential elements such as title, URL, publication year, and 3-5 snippets.
+
+                Important Guidelines:
+                - Do not fabricate information; only include data found in the URLs.
+                - Prioritize recent information by limiting sources to those from the last 4 years.
                 """),
             agent=agent,
-            expected_output="""A JSON object containing the researched information for each topic on the target_account.""",
+            expected_output="A 'Finding' JSON object",
             callback=self.append_event_callback,
-            output_json_list=[NamedUrl, Finding],
+            output_json_list=self.finding,
             async_execution=True
         )
+
+
+    # @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
+    # def review_research(self, agent: Agent, target_account: str, topics: list[str], feedback_tasks: list[Task]):
+    #     return Task(
+    #         description=dedent(f"""
+    #             You will put together a 'TopicInfo' JSON object on the {target_account} for each of the {topics}. Your role is to scrutinize the list 
+    #             of URLs submitted by the Account Researcher based on how well they align with the {target_account} and research objective {topics}. 
+    #             Provide structured feedback in your task assignment that helps the researcher refine their approach:
+                
+    #             - Prioritize recent URLs from official company websites, annual reports, and press releases that provide foundational data
+    #             - Recommend expansion into secondary sources such as industry analyses and business news that offer broader perspectives.
+    #             - Rank the URLs based on their alignment with the research objectives and {target_account}'s specifics.
+    #             - Advise on key content within these URLs to be scraped or further analyzed.
+                
+    #             Provide structured and actionable instructions so the researcher is clear on subsequent steps, whether it involves deeper data 
+    #             extraction or additional sourcing.            
+
+    #             """),
+    #         agent=agent,
+    #         expected_output=dedent(
+    #             """A JSON object containing the 'target_account', 'topics', and 'findings' each with the source URLs."""),
+    #         callback=self.append_event_callback,
+    #         context=feedback_tasks,
+    #         output_json=TopicInfo
+    #     )
+
+    # @traceable(name="research account", run_type="retriever", process_inputs=debug_process_inputs)    
+    # def research_account(self, agent: Agent, target_account: str, topics: list[str]):
+    #     return Task(
+    #         description=dedent(f"""
+    #         Your primary objective is to create multiple 'finding' JSON objects for {target_account}, each corresponding to the specified {topics}. 
+    #         Begin by identifying and compiling a list of the most relevant URLs that pertain to each topic. Submit these URLs in a JSON format to 
+    #         the Research Reviewer for initial feedback.
+            
+    #         - If the feedback indicates a need for more detailed information, use tools like 'get_content' to extract specific text from the provided URLs.
+    #         - If additional sources are required, gather more URLs with the 'search' tool or use 'find_similar' to locate related content.
+    #         - Compile and return the finding in a JSON object format, ensuring each finding includes 'title, URL, year, list of snippets'.
+
+    #         Important:
+    #         - Do not make up information. Only return the information you find. Nothing else!
+    #         - Prioritize recent information by limiting source URLs to include only those from the last 4 years.
+    #         - Cease further searching after the initial submission and do not continue with any actions until you receive feedback from the Research Reviewer.
+    #         """),
+    #         agent=agent,
+    #         expected_output="A 'Finding' JSON object, compiled from a list of relevant URLs for each topic on the target_account.",
+    #         callback=self.append_event_callback,
+    #         output_json_list=[NamedUrlList, Finding],
+    #         async_execution=True
+    #     )
+
