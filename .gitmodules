@@ -11,3 +11,6 @@
     path = nextjs_crewai
     url = https://github.com/bhancockio/nextjs-crewai-basic-tutorial.git
 	
+[submodule "external/CrewAICrashCourse"]
+	path = external/CrewAICrashCourse
+	url = https://github.com/alejandro-ao/crewai-crash-course.git
