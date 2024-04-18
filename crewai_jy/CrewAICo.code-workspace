@@ -5,8 +5,8 @@
 		}
 	],
 	"settings": {
-		"workbench.colorTheme": "MacOS Modern Dark - Ventura Xcode",
-		"CodeGPT.apiKey": "Ollama"
+		"workbench.colorTheme": "Beautiful Dracula Normal",
+		"CodeGPT.apiKey": "OpenAI"
 	},
 	"launch": {
 		"version": "0.2.0",

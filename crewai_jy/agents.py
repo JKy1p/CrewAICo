@@ -2,7 +2,7 @@ from typing import List
 from textwrap import dedent 
 from crewai import Agent
 from langchain_openai import ChatOpenAI
-from tools.exa_search_tool import ExaSearchToolset
+from langchain.agents.tools import tool as ExaSearchToolset
 from langsmith import traceable
 from langsmith.run_trees import RunTree
 from langchain_community.llms import Ollama
@@ -12,6 +12,9 @@ from utils.logging import logger, debug_process_inputs
 class AccountResearchAgents():
 
     def __init__(self):
+        # self.tools = ExaSearchToolset("ExaSearch", return_direct=True)(
+        #     ExaSearchToolset.tools
+        # )
         self.tools = ExaSearchToolset.tools()
         self.ollama_llm = Ollama(model="mistral:7b-instruct")
         #self.llm = ChatOpenAI(model="gpt-4-turbo-preview")

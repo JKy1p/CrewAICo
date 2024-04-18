@@ -1,22 +1,24 @@
-from typing import List, TypeVar, Generic, Optional 
+from typing import ClassVar, List, Type, Optional 
 import os, json
-from exa_py.api import Exa, SearchResponse
-from langchain_core.tools import tool
-from pydantic.v1 import BaseModel, Field, HttpUrl
-from crewai_tools import BaseTool
-from langsmith import traceable
-from utils.logging import debug_process_inputs
 from exa_py.api import Exa
+from langchain.agents.tools import tool
+from pydantic.v1 import BaseModel, Field, parse_obj_as 
+from crewai_tools import BaseTool 
+from langsmith import traceable 
+from utils.logging import debug_process_inputs 
+from exa_py.api import Exa
+import re
+import dataclasses
+from abc import abstractmethod
 
 # Define the SearchResult model
+def to_snake_case(camel_str: str) -> str:
+    """Convert a camelCase string to a snake_case string."""
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_str).lower()
+
 class SearchResult(BaseModel):
-    id: str
-    url: HttpUrl
-    title: str
-    text: Optional[str] = None
-    highlights: Optional[List[str]] = None
-    highlight_scores: Optional[List[float]] = None     
-    
+    results: str
+    status: str
                 
 class ExaSearchInput(BaseModel):
     target_account: str = Field(..., description="The target account for the search.")
@@ -28,35 +30,52 @@ class ExaSearchInput(BaseModel):
         return f"{self.target_account} {self.topic}"
 
 class ExaSearchToolset(BaseTool):
-    @tool
-    def search(search_input: ExaSearchInput) -> SearchResponse[SearchResult]: # type: ignore
+    """A toolset for searching the web using the Exa API."""
+    name: str = Field(..., description="Exa Search Toolset")
+    description: str = Field(..., description="Searches the web based on a target account and topic and returns search results.")
+    args_schema: Type[BaseModel] = ExaSearchInput
+
+    @abstractmethod
+    def search(self, search_input: ExaSearchInput, *args) -> List[SearchResult]: # type: ignore
         """Search for a webpage based on the query constructed from search input."""
-        query = search_input.query        
-        return ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=3)
-
-
-    @tool
-    def find_similar(url: str) -> SearchResponse[SearchResult]: # type: ignore
-        """Search for webpages similar to a given URL."""
-
-        return ExaSearchToolset._exa().find_similar(url, num_results=3)
-
-    @tool
-    def get_contents(ids_str: str) -> str: # type: ignore
+        
+        query = search_input.query
+        raw_results = ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=search_input.limit)
+        results = [
+            parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
+            for result in raw_results.results
+        ]
+        return results    
+    
+    @abstractmethod
+    def find_similar(self, url: str, *args) -> List[SearchResult]:
+        """Search for webpages similar to a given URL.
+        The url passed in should be a URL returned from `search`.
         """
-        Get the contents of a webpage.
+        raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
+        results = [
+            parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
+            for result in raw_results.results
+        ]
+        return results
+
+    @abstractmethod
+    def get_contents(self, ids_str: str, *args) -> [SearchResult]: # type: ignore
+        """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
         try:
             ids = json.loads(ids_str)  # Safely convert string to list
         except json.JSONDecodeError:
-            return "Invalid input format."
-
+            return SearchResult(results="Invalid input format.", status="error")
+        
         contents = str(ExaSearchToolset._exa().get_contents(ids))
         contents = contents.split("URL:")
         contents = [content[:1000] for content in contents]
-        return "\n\n".join(contents)
-
+        joined_contents = "\n\n".join(contents)
+        
+        return SearchResult(results=joined_contents, status="ok")
+    
     @staticmethod
     def _exa():
         return Exa(api_key=os.environ.get('EXA_API_KEY'))
