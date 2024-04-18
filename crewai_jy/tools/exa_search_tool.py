@@ -34,8 +34,12 @@ class ExaSearchToolset(BaseTool):
     name: str = Field(..., description="Exa Search Toolset")
     description: str = Field(..., description="Searches the web based on a target account and topic and returns search results.")
     args_schema: Type[BaseModel] = ExaSearchInput
+    
+    # def _run(self):
+    # # Dummy implementation of the abstract method to allow instantiation
+    #     return "This method is not utilized directly."
 
-    def search(self, search_input: ExaSearchInput) -> List[SearchResult]:
+    def _run_search(self, search_input: ExaSearchInput) -> List[SearchResult]:
         """Search for a webpage based on the query constructed from search input."""
         
         query = search_input.query
@@ -46,7 +50,7 @@ class ExaSearchToolset(BaseTool):
         ]
         return results    
     
-    def find_similar(self, url: str) -> List[SearchResult]:
+    def _run_find_similar(self, url: str) -> List[SearchResult]:
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
@@ -57,7 +61,7 @@ class ExaSearchToolset(BaseTool):
         ]
         return results
 
-    def get_contents(self, ids_str: str) -> List[SearchResult]:
+    def _run_get_contents(self, ids_str: str) -> List[SearchResult]:
         """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
@@ -73,17 +77,19 @@ class ExaSearchToolset(BaseTool):
                         
         return [SearchResult(results=contents_joined, status="ok")]
     
+    
+    @staticmethod
+    def tools():
+        return [
+            ExaSearchToolset._run_search,
+            ExaSearchToolset._run_find_similar,
+            ExaSearchToolset._run_get_contents
+        ]
+
     @staticmethod
     def _exa():
         return Exa(api_key=os.environ.get('EXA_API_KEY'))
 
-    @staticmethod
-    def tools():
-        return [
-            ExaSearchToolset.search,
-            ExaSearchToolset.find_similar,
-            ExaSearchToolset.get_contents
-        ]
 # Example of using the class
     
 
