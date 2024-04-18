@@ -1,8 +1,9 @@
 from typing import List
 from textwrap import dedent 
 from crewai import Agent
+from crewai_tools import tool as ExaSearchToolset
 from langchain_openai import ChatOpenAI
-from langchain.agents.tools import tool as ExaSearchToolset
+#from langchain.agents.tools import tool as ExaSearchToolset
 from langsmith import traceable
 from langsmith.run_trees import RunTree
 from langchain_community.llms import Ollama

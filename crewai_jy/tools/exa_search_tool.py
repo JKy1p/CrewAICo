@@ -35,8 +35,7 @@ class ExaSearchToolset(BaseTool):
     description: str = Field(..., description="Searches the web based on a target account and topic and returns search results.")
     args_schema: Type[BaseModel] = ExaSearchInput
 
-    @abstractmethod
-    def search(self, search_input: ExaSearchInput, *args) -> List[SearchResult]: # type: ignore
+    def search(self, search_input: ExaSearchInput) -> List[SearchResult]:
         """Search for a webpage based on the query constructed from search input."""
         
         query = search_input.query
@@ -47,8 +46,7 @@ class ExaSearchToolset(BaseTool):
         ]
         return results    
     
-    @abstractmethod
-    def find_similar(self, url: str, *args) -> List[SearchResult]:
+    def find_similar(self, url: str) -> List[SearchResult]:
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
@@ -59,22 +57,21 @@ class ExaSearchToolset(BaseTool):
         ]
         return results
 
-    @abstractmethod
-    def get_contents(self, ids_str: str, *args) -> [SearchResult]: # type: ignore
+    def get_contents(self, ids_str: str) -> List[SearchResult]:
         """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
         try:
             ids = json.loads(ids_str)  # Safely convert string to list
         except json.JSONDecodeError:
-            return SearchResult(results="Invalid input format.", status="error")
+            return [SearchResult(results="Invalid input format.", status="error")]
         
         contents = str(ExaSearchToolset._exa().get_contents(ids))
-        contents = contents.split("URL:")
-        contents = [content[:1000] for content in contents]
-        joined_contents = "\n\n".join(contents)
-        
-        return SearchResult(results=joined_contents, status="ok")
+        contents_pieces = contents.split("URL:")
+        contents_trunc = [piece.strip()[:1000] for piece in contents_pieces]
+        contents_joined = "\n\n".join(contents_trunc)
+                        
+        return [SearchResult(results=contents_joined, status="ok")]
     
     @staticmethod
     def _exa():
