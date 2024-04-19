@@ -32,13 +32,14 @@ class ExaSearchInput(BaseModel):
 
 class ExaSearchToolset(BaseTool):
     """A toolset for searching the web using the Exa API."""
-    name: str = Field(..., description="Exa Search Toolset")
-    description: str = Field(..., description="Searches the web based on a target account and topic and returns search results.")
+    name: str = "Exa Search Toolset"
+    description: str = "Searches the web based on a target account and topic and returns search results."
     args_schema: Type[BaseModel] = ExaSearchInput
     
-    # def _run(self):
-    # # Dummy implementation of the abstract method to allow instantiation
-    #     return "This method is not utilized directly."
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def _run(self, method_name: str, *args, **kwargs):
         """
         Dispatch method to handle action based on method_name.
@@ -91,13 +92,11 @@ class ExaSearchToolset(BaseTool):
     
     
     @staticmethod
-    def tools():
-        toolset = ExaSearchToolset()
-
+    def tools(): 
         return [
-            toolset.search,
-            toolset.find_similar,
-            toolset.get_contents
+            ExaSearchToolset.search,
+            ExaSearchToolset.find_similar,
+            ExaSearchToolset.get_contents
         ]
 
     @staticmethod

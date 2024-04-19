@@ -3,7 +3,7 @@ from textwrap import dedent
 from job_manager import append_event
 from models import SourceInfo, Finding, TopicInfo
 from utils.logging import logger, debug_process_inputs
-from langsmith import wrappers,traceable
+from langsmith import wrappers, traceable
 
 
 # class Feedback:

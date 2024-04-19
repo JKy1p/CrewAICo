@@ -1,11 +1,9 @@
 from typing import List
 from textwrap import dedent 
 from crewai import Agent
-from crewai_tools import tool as ExaSearchToolset
+from tools.exa_search_tool import tool as ExaSearchToolset
 from langchain_openai import ChatOpenAI
-#from langchain.agents.tools import tool as ExaSearchToolset
 from langsmith import traceable
-from langsmith.run_trees import RunTree
 from langchain_community.llms import Ollama
 from utils.logging import logger, debug_process_inputs
 
@@ -47,7 +45,7 @@ class AccountResearchAgents():
                 Armed with analytical skills and strategic data gathering capabilities, the Account Researcher identifies and structures key information, 
                 setting the stage for in-depth analysis and strategic decisions.
                 """),
-            tools=self.tools,
+            tools=[ExaSearchToolset],   
             llm=self.ollama_llm,
             verbose=True,
         )
