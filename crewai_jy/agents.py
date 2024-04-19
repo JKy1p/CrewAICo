@@ -12,7 +12,7 @@ from utils.logging import logger, debug_process_inputs
 class AccountResearchAgents():
 
     def __init__(self):
-        self.tools = ExaSearchToolset
+        self.tools = ExaSearchToolset.tools()
         self.ollama_llm = Ollama(model="mistral:7b-instruct")
         #self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
 
@@ -46,7 +46,7 @@ class AccountResearchAgents():
                 Armed with analytical skills and strategic data gathering capabilities, the Account Researcher identifies and structures key information, 
                 setting the stage for in-depth analysis and strategic decisions.
                 """),
-            tools=self.tools(),  
+            tools=self.tools,  
             llm=self.ollama_llm,
             verbose=True,
         )
