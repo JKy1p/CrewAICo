@@ -1,4 +1,4 @@
-from typing import ClassVar, List, Type, Optional 
+from typing import List, Type, Optional, Callable, Any
 import os, json
 from exa_py.api import Exa
 from langchain.agents.tools import tool
@@ -51,7 +51,7 @@ class ExaSearchToolset(BaseTool):
         return method(*args, **kwargs)
 
 
-    def search(self, search_input: ExaSearchInput) -> List[SearchResult]:
+    def search(self, search_input: ExaSearchInput, *args, **kwargs) -> List[SearchResult]:
         """Search for a webpage based on the query constructed from search input."""
         query = search_input.query
         raw_results = ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=search_input.limit)
@@ -62,7 +62,7 @@ class ExaSearchToolset(BaseTool):
         ]
         return results    
 
-    def find_similar(self, url: str) -> List[SearchResult]:
+    def find_similar(self, url: str, *args, **kwargs) -> List[SearchResult]:
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
@@ -74,7 +74,8 @@ class ExaSearchToolset(BaseTool):
         ]
         return results
 
-    def get_contents(self, ids_str: str) -> List[SearchResult]:
+
+    def get_contents(self, ids_str: str, *args, **kwargs) -> List[SearchResult]:
         """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
@@ -92,7 +93,7 @@ class ExaSearchToolset(BaseTool):
     
     
     @staticmethod
-    def tools(): 
+    def tools(*args, **kwargs):
         return [
             ExaSearchToolset.search,
             ExaSearchToolset.find_similar,

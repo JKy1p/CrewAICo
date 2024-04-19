@@ -1,0 +1,6 @@
+{
+    "python.analysis.exclude": [
+        "/Users/e401316/Desktop/CrewAICo/reference_projects",
+        "/Users/e401316/Desktop/CrewAICo/reference_docs"
+    ]
+}

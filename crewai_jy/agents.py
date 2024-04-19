@@ -1,7 +1,8 @@
 from typing import List
 from textwrap import dedent 
 from crewai import Agent
-from tools.exa_search_tool import tool as ExaSearchToolset
+from tools.exa_search_tool import ExaSearchToolset
+from langchain.agents.tools import tool as ExaSearchToolset
 from langchain_openai import ChatOpenAI
 from langsmith import traceable
 from langchain_community.llms import Ollama
@@ -11,7 +12,7 @@ from utils.logging import logger, debug_process_inputs
 class AccountResearchAgents():
 
     def __init__(self):
-        self.tools = ExaSearchToolset.tools()
+        self.tools = ExaSearchToolset
         self.ollama_llm = Ollama(model="mistral:7b-instruct")
         #self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
 
@@ -45,7 +46,7 @@ class AccountResearchAgents():
                 Armed with analytical skills and strategic data gathering capabilities, the Account Researcher identifies and structures key information, 
                 setting the stage for in-depth analysis and strategic decisions.
                 """),
-            tools=[ExaSearchToolset],   
+            tools=self.tools(),  
             llm=self.ollama_llm,
             verbose=True,
         )
