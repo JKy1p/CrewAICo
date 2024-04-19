@@ -11,7 +11,6 @@ import re
 import dataclasses
 from abc import abstractmethod
 
-# Define the SearchResult model
 def to_snake_case(camel_str: str) -> str:
     """Convert a camelCase string to a snake_case string."""
     return re.sub(r'(?<!^)(?=[A-Z])', '_', camel_str).lower()
@@ -19,7 +18,8 @@ def to_snake_case(camel_str: str) -> str:
 class SearchResult(BaseModel):
     results: str
     status: str
-                
+
+
 class ExaSearchInput(BaseModel):
     target_account: str = Field(..., description="The target account for the search.")
     topic: str = Field(..., description="The topics of interest for the search.")
@@ -28,6 +28,7 @@ class ExaSearchInput(BaseModel):
     @property
     def query(self) -> str:
         return f"{self.target_account} {self.topic}"
+
 
 class ExaSearchToolset(BaseTool):
     """A toolset for searching the web using the Exa API."""
@@ -38,30 +39,41 @@ class ExaSearchToolset(BaseTool):
     # def _run(self):
     # # Dummy implementation of the abstract method to allow instantiation
     #     return "This method is not utilized directly."
+    def _run(self, method_name: str, *args, **kwargs):
+        """
+        Dispatch method to handle action based on method_name.
+        This method simplifies the calling process and avoids directly exposing API methods.
+        """
+        method = getattr(self, method_name, None)
+        if not method:
+            raise ValueError(f"Method {method_name} not found in ExaSearchToolset.")
+        return method(*args, **kwargs)
 
-    def _run_search(self, search_input: ExaSearchInput) -> List[SearchResult]:
+
+    def search(self, search_input: ExaSearchInput) -> List[SearchResult]:
         """Search for a webpage based on the query constructed from search input."""
-        
         query = search_input.query
         raw_results = ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=search_input.limit)
+        
         results = [
             parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
             for result in raw_results.results
         ]
         return results    
-    
-    def _run_find_similar(self, url: str) -> List[SearchResult]:
+
+    def find_similar(self, url: str) -> List[SearchResult]:
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
         raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
+        
         results = [
             parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
             for result in raw_results.results
         ]
         return results
 
-    def _run_get_contents(self, ids_str: str) -> List[SearchResult]:
+    def get_contents(self, ids_str: str) -> List[SearchResult]:
         """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
@@ -80,10 +92,12 @@ class ExaSearchToolset(BaseTool):
     
     @staticmethod
     def tools():
+        toolset = ExaSearchToolset()
+
         return [
-            ExaSearchToolset._run_search,
-            ExaSearchToolset._run_find_similar,
-            ExaSearchToolset._run_get_contents
+            toolset.search,
+            toolset.find_similar,
+            toolset.get_contents
         ]
 
     @staticmethod

@@ -13,9 +13,6 @@ from utils.logging import logger, debug_process_inputs
 class AccountResearchAgents():
 
     def __init__(self):
-        # self.tools = ExaSearchToolset("ExaSearch", return_direct=True)(
-        #     ExaSearchToolset.tools
-        # )
         self.tools = ExaSearchToolset.tools()
         self.ollama_llm = Ollama(model="mistral:7b-instruct")
         #self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
