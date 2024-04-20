@@ -1,22 +1,27 @@
 from crewai import Task, Agent
 from textwrap import dedent
 from job_manager import append_event
-from models import SourceInfo, Finding, TopicInfo
+from models import Source, SourceInfo, FindingInfo, TopicInfo
 from utils.logging import logger, debug_process_inputs
+from typing import List
 from langsmith import wrappers, traceable
 
 
-# class Feedback:
-#     def __init__(self, feedback: str):
-#         self.feedback = feedback
+
 @traceable
 class AccountResearchTasks():
 
     def __init__(self, job_id):
         self.job_id = job_id
-        self.sourceinfo = SourceInfo
-        self.finding = Finding
-        self.TopicInfo = TopicInfo
+        # self.factory = DefaultFactory()
+        # source= self.factory.do_source()
+        # source_info = self.factory.do_source_info()
+        # finding_info = self.factory.do_finding_info()
+        # topic_info = self.factory.do_topic_info()
+        self.source = Source()
+        self.source_info = SourceInfo()
+        self.finding_info = FindingInfo()
+        self.topic_info = TopicInfo()
 
 
     def append_event_callback(self, task_output):
@@ -42,7 +47,7 @@ class AccountResearchTasks():
                 and accuracy."""),
             callback=self.append_event_callback,
             context=tasks,
-            output_json=self.TopicInfo
+            output_json=[self.topic_info],
         )
 
     @traceable(name="research account", run_type="retriever", process_inputs=debug_process_inputs)    
@@ -71,7 +76,7 @@ class AccountResearchTasks():
             agent=agent,
             expected_output="A 'Finding' JSON object",
             callback=self.append_event_callback,
-            output_json_list=self.finding,
+            output_json=[self.source, self.source_info, self.finding_info], 
             async_execution=True
         )
 

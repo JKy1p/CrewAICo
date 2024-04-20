@@ -87,9 +87,7 @@ class ExaSearchToolset(BaseTool):
                         
         return [SearchResult(results=contents_joined, status="ok")]
     
-    
-    @staticmethod
-    def tools():
+    def searchExaTool(self):
         return [
             ExaSearchToolset.search,
             ExaSearchToolset.find_similar,

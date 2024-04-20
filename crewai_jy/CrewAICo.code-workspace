@@ -6,7 +6,20 @@
 	],
 	"settings": {
 		"workbench.colorTheme": "Beautiful Dracula Normal",
-		"CodeGPT.apiKey": "OpenAI"
+		"CodeGPT.apiKey": "OpenAI",
+		"mypy.dmypyExecutable": "/Users/e401316/anaconda3/envs/crewenv/bin/dmypy",
+		"python.analysis.exclude": [
+			"/Users/e401316/Desktop/CrewAICo/reference_docs",
+			"/Users/e401316/Desktop/CrewAICo/reference_projects"
+		],
+		"python.analysis.include": [
+			"/Users/e401316/Desktop/CrewAICo/crewai_jy"
+		],
+		"python.analysis.gotoDefinitionInStringLiteral": false,
+		"python.analysis.ignore": [
+			"/Users/e401316/Desktop/CrewAICo/reference_docs",
+			"/Users/e401316/Desktop/CrewAICo/reference_projects"
+		]
 	},
 	"launch": {
 		"version": "0.2.0",

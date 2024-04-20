@@ -2,5 +2,14 @@
     "python.analysis.exclude": [
         "/Users/e401316/Desktop/CrewAICo/reference_projects",
         "/Users/e401316/Desktop/CrewAICo/reference_docs"
-    ]
+    ],
+    "mypy.dmypyExecutable": "dmypy",
+    "python.analysis.ignore": [
+        "/Users/e401316/Desktop/CrewAICo/reference_projects",
+        "/Users/e401316/Desktop/CrewAICo/reference_docs"
+    ],
+    "python.analysis.include": [
+        "/Users/e401316/Desktop/CrewAICo/crewai_jy"
+    ],
+    "python.analysis.gotoDefinitionInStringLiteral": false
 }

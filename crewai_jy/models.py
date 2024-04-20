@@ -1,28 +1,32 @@
-from typing import List
-from pydantic import BaseModel, HttpUrl 
+from typing import List, Union
+from pydantic.v1 import BaseModel, HttpUrl
 
 
+# Model for Referencing Information 
 class Source(BaseModel):
-    number: int
-    source_title: str 
-    url: HttpUrl 
-    date_published: int
-    
-class SourceInfo(BaseModel):
-    source_info_title: Source
-    highlights: List[str]
-    
-class Finding(BaseModel):
-    finding_title: str
-    text: str
-    highlights: List[str]
-    finding_info: List[SourceInfo]
+    source_title: str = "Default Title"
+    url: Union[str, HttpUrl] = "http://example.com"
+    year_published: int = 2022
 
+# Next level up, incorporates Source with snippets
+class SourceInfo(BaseModel):
+    source_from: Source = Source()
+    snippets: List[str] = ["snippet1", "snippet2"]
+
+# More complex model, built from SourceInfo
+class FindingInfo(BaseModel):
+    finding_title: str = "Default Finding"
+    finding_insight: str = "Default insight"
+    finding_info: List[SourceInfo] = [SourceInfo()]
+
+# Top level model, built from FindingInfo
 class TopicInfo(BaseModel):
-    topic_title: str
-    text: str
-    highlights: List[str]
-    topic_info: List[Finding]
+    topic_title: str = "Topic"
+    topic_insights: List[str] = ["Insight1", "Insight2"]
+    topic_info: List[FindingInfo] = [FindingInfo()]
+
+
     
-# class TopicInfoList(BaseModel):
-#     topics: List[TopicInfo]
+    
+    
+
