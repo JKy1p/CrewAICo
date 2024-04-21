@@ -31,74 +31,79 @@ class ExaSearchToolset(BaseTool):
     name: str = "Exa Search Toolset"
     description: str = "Searches the web based on a target account and topic and returns search results."
     args_schema: Type[BaseModel] = ExaSearchInput
-    
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def _run(self, method_name: str, *args, **kwargs):
-        """
-        Dispatch method to handle action based on method_name.
-        This method simplifies the calling process and avoids directly exposing API methods.
-        """
-        method = getattr(self, method_name, None)
-        if not method:
-            raise ValueError(f"Method {method_name} not found in ExaSearchToolset.")
-        return method(*args, **kwargs)
 
 
-    def search(self, search_input: ExaSearchInput) -> List[SearchResult]:
+    def _run(self, target_account: str, topic: str, limit: int = 3):
+        """Run the search operation based on a target account, topic, and result limit."""
+        search_input = ExaSearchInput(target_account=target_account, topic=topic, limit=limit)
+        return self.search(search_input.query)
+
+#-> List[SearchResult]:
+    def search(self, query:str): 
         """Search for a webpage based on the query constructed from search input."""
-        query = search_input.query
-        raw_results = ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=search_input.limit)
+        return ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=3)
         
-        results = [
-            parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
-            for result in raw_results.results
-        ]
-        return results    
+        # results = [
+        #     parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
+        #     for result in raw_results.results
+        # ]
+        # return results    
 
-    def find_similar(self, url: str) -> List[SearchResult]:
+# -> List[SearchResult]:
+    def find_similar(self, url: str):
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
-        raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
+        return ExaSearchToolset._exa().find_similar(url, num_results=3)
+        # raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
         
-        results = [
-            parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
-            for result in raw_results.results
-        ]
-        return results
+        # results = [
+        #     parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
+        #     for result in raw_results.results
+        # ]
+        # return results
 
-
-    def get_contents(self, ids_str: str) -> List[SearchResult]:
+#  -> List[SearchResult]:
+    def get_contents(self, ids_str: str):
         """Get the contents of a webpage.
         The ids must be passed in as a JSON string representing a list of ids.
         """
-        try:
-            ids = json.loads(ids_str)  # Safely convert string to list
-        except json.JSONDecodeError:
-            return [SearchResult(results="Invalid input format.", status="error")]
-        
+        ids = json.loads(ids_str)
+
         contents = str(ExaSearchToolset._exa().get_contents(ids))
-        contents_pieces = contents.split("URL:")
-        contents_trunc = [piece.strip()[:1000] for piece in contents_pieces]
-        contents_joined = "\n\n".join(contents_trunc)
+        contents = contents.split("URL:")
+        contents = [content[:1000] for content in contents]
+        return "\n\n".join(contents)
+        
+        
+        # try:
+        #     ids = json.loads(ids_str)  # Safely convert string to list
+        # except json.JSONDecodeError:
+        #     return [SearchResult(results="Invalid input format.", status="error")]
+        
+        # contents = str(ExaSearchToolset._exa().get_contents(ids))
+        # contents_pieces = contents.split("URL:")
+        # contents_trunc = [piece.strip()[:1000] for piece in contents_pieces]
+        # contents_joined = "\n\n".join(contents_trunc)
                         
-        return [SearchResult(results=contents_joined, status="ok")]
-    
-    def searchExaTool(self):
+        # return [SearchResult(results=contents_joined, status="ok")]
+
+
+    @staticmethod    
+    def searchExaTool():
         return [
             ExaSearchToolset.search,
             ExaSearchToolset.find_similar,
             ExaSearchToolset.get_contents
         ]
 
+
     @staticmethod
     def _exa():
         return Exa(api_key=os.environ.get('EXA_API_KEY'))
+    
 
-# Example of using the class
+
     
 
     

@@ -2,7 +2,7 @@ from typing import List
 from textwrap import dedent 
 from crewai import Agent
 from tools.exa_search_tool import ExaSearchToolset
-#from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langsmith import traceable
 from langchain_community.llms import Ollama
 from utils.logging import logger, debug_process_inputs
@@ -12,9 +12,9 @@ class AccountResearchAgents():
 
     def __init__(self):
         self.searchExaTool = ExaSearchToolset()
-        # self.tools = self.searchExaTool.tools()
-        self.ollama_llm = Ollama(model="mistral:7b-instruct")
-        #self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
+        # self.ollama_llm = Ollama(model="llama3:instruct")
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
+        # self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
 
     @traceable(name="research_reviewer", run_type="llm", process_inputs=debug_process_inputs)    
     def research_reviewer(self, target_account: str, topics: List[str]) -> Agent:
@@ -29,7 +29,7 @@ class AccountResearchAgents():
                 bridging raw data and actionable business insights. This involves validating information, identifying gaps, and directing 
                 further research with strategic precision.
                 """),
-            llm=self.ollama_llm,
+            llm=self.llm,
             verbose=True,
             allow_delegation=True
         )
@@ -47,7 +47,7 @@ class AccountResearchAgents():
                 setting the stage for in-depth analysis and strategic decisions.
                 """),
             tools=[self.searchExaTool],  
-            llm=self.ollama_llm,
+            llm=self.llm,
             verbose=True,
         )
 
