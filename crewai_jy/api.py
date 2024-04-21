@@ -1,15 +1,12 @@
-# Standard library imports
 from datetime import datetime
 import json
 from threading import Thread
 from uuid import uuid4
 
-# Related third-party imports
 from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Local application/library specific imports
 from crew import AccountResearchCrew
 from job_manager import append_event, jobs, jobs_lock, Event
 from utils.logging import logger

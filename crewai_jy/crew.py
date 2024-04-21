@@ -21,8 +21,8 @@ class AccountResearchCrew:
         tasks = AccountResearchTasks(
             job_id=self.job_id)
 
-        research_reviewer = agents.research_reviewer(
-            target_account, topics)
+        report_writer = agents.report_writer(target_account, topics)
+        research_manager = agents.research_manager(target_account, topics)
         account_researcher = agents.account_researcher()
 
         research_account_tasks = [
@@ -30,12 +30,18 @@ class AccountResearchCrew:
             for topic in topics
         ]
 
-        review_research_task = tasks.review_research(
-            research_reviewer, target_account, topics, research_account_tasks)  # Added closing parenthesis here
-
+        manage_research_tasks = [
+            tasks.manage_research(research_manager, target_account, topics, research_account_tasks)  
+            for topic in topics
+        ]
+        
+        write_report_task = tasks.write_report(
+            report_writer, target_account, topics, manage_research_tasks)
+        
+        
         self.crew = Crew(
-            agents=[research_reviewer, account_researcher],
-            tasks=[*research_account_tasks, review_research_task],
+            agents=[report_writer, research_manager, account_researcher],
+            tasks=[*research_account_tasks, *manage_research_tasks, write_report_task],
             verbose=2,
         )
 

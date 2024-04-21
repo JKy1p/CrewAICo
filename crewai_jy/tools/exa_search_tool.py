@@ -5,7 +5,6 @@ from pydantic.v1 import BaseModel, Field, parse_obj_as
 from crewai_tools import BaseTool 
 from exa_py.api import Exa
 import re
-import dataclasses
 
 def to_snake_case(camel_str: str) -> str:
     """Convert a camelCase string to a snake_case string."""
@@ -25,7 +24,6 @@ class ExaSearchInput(BaseModel):
     def query(self) -> str:
         return f"{self.target_account} {self.topic}"
 
-
 class ExaSearchToolset(BaseTool):
     """A toolset for searching the web using the Exa API."""
     name: str = "Exa Search Toolset"
@@ -38,35 +36,22 @@ class ExaSearchToolset(BaseTool):
         search_input = ExaSearchInput(target_account=target_account, topic=topic, limit=limit)
         return self.search(search_input.query)
 
-#-> List[SearchResult]:
+
     def search(self, query:str): 
         """Search for a webpage based on the query constructed from search input."""
         return ExaSearchToolset._exa().search(query, use_autoprompt=True, num_results=3)
-        
-        # results = [
-        #     parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
-        #     for result in raw_results.results
-        # ]
-        # return results    
 
-# -> List[SearchResult]:
+
     def find_similar(self, url: str):
         """Search for webpages similar to a given URL.
         The url passed in should be a URL returned from `search`.
         """
         return ExaSearchToolset._exa().find_similar(url, num_results=3)
-        # raw_results = ExaSearchToolset._exa().find_similar(url, num_results=3)
-        
-        # results = [
-        #     parse_obj_as(SearchResult, {to_snake_case(k): v for k, v in dataclasses.asdict(result).items()})
-        #     for result in raw_results.results
-        # ]
-        # return results
 
-#  -> List[SearchResult]:
+
     def get_contents(self, ids_str: str):
         """Get the contents of a webpage.
-        The ids must be passed in as a JSON string representing a list of ids.
+        The ids must be passed in as a string representing a list of ids.
         """
         ids = json.loads(ids_str)
 
@@ -74,19 +59,6 @@ class ExaSearchToolset(BaseTool):
         contents = contents.split("URL:")
         contents = [content[:1000] for content in contents]
         return "\n\n".join(contents)
-        
-        
-        # try:
-        #     ids = json.loads(ids_str)  # Safely convert string to list
-        # except json.JSONDecodeError:
-        #     return [SearchResult(results="Invalid input format.", status="error")]
-        
-        # contents = str(ExaSearchToolset._exa().get_contents(ids))
-        # contents_pieces = contents.split("URL:")
-        # contents_trunc = [piece.strip()[:1000] for piece in contents_pieces]
-        # contents_joined = "\n\n".join(contents_trunc)
-                        
-        # return [SearchResult(results=contents_joined, status="ok")]
 
 
     @staticmethod    

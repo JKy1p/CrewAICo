@@ -16,18 +16,37 @@ class AccountResearchAgents():
         self.llm = ChatOpenAI(model="gpt-3.5-turbo-0125")
         # self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
 
-    @traceable(name="research_reviewer", run_type="llm", process_inputs=debug_process_inputs)    
-    def research_reviewer(self, target_account: str, topics: List[str]) -> Agent:
+    def report_writer(self, target_account: str, topics: List[str]) -> Agent:
         return Agent(
-            role="Research Reviewer",
+            role="Research Writer",
             goal=dedent(f"""\
-                Enhance research quality for the {target_account} by refining a list of JSON objects that represent the most relevant 
-                findings on specified {topics}. Validate findings, identify gaps, and direct further research with strategic precision.                
+                Compile and synthesize the collected operational data into a detailed report that highlights key findings, insights, and strategic recommendations 
+                for the {target_account}. Set clear objectives for the report's structure and content at the AccountInfo level, ensuring all necessary information 
+                is included for strategic decision-making.
                 """),
             backstory=dedent("""\
-                As Research Reviewer your extensive experience in business operations and strategy, you critically evaluate research outputs, 
-                bridging raw data and actionable business insights. This involves validating information, identifying gaps, and directing 
-                further research with strategic precision.
+                As a skilled Writer with a background in technical writing and journalism, you excel at distilling complex operational data into clear, compelling 
+                narratives. Your role is crucial in bridging intricate research findings with strategic business applications, ensuring the report not only summarizes 
+                the research but also provides actionable insights and recommendations.
+                """),
+            llm=self.llm,
+            verbose=True,
+            allow_delegation=True
+        )
+    
+    @traceable(name="research_reviewer", run_type="llm", process_inputs=debug_process_inputs)    
+    def research_manager (self, target_account: str, topics: List[str]) -> Agent:
+        return Agent(
+            role="Research Manager",
+            goal=dedent(f"""\
+                    Direct and enhance the research process for the {target_account}, refining the collected data and guiding the development of comprehensive topics. 
+                    It is your responsibility to set the topic objectives, review researcher outputs, and identify strategic keywords for further research queries. This 
+                    ensure that all subtopics align with your overarching topic goals.
+                """),
+            backstory=dedent("""\
+                    As a Research Manager, your role combines strategic oversight with expert knowledge in operations and strategy analysis. You guide the development 
+                    of the report structure and content, ensuring that all research supports topic objects. Your critical evaluations of initial research outputs bridge 
+                    the gap between raw data and actionable insights, directing the research focus to meet the objectives you have established for each topic.
                 """),
             llm=self.llm,
             verbose=True,
@@ -39,13 +58,14 @@ class AccountResearchAgents():
         return Agent(
             role="Account Researcher",
             goal=dedent("""\
-                Gather and organize foundational data on {target_account} across specified research {topics}. Identify credible and current sources, 
-                convert findings into structured JSON objects, and ensure they meet the preliminary research criteria.
+                Gather comprehensive operational data on {target_account} from specified research {topics}, focusing on the most credible and current sources 
+                such as the company's website, latest annual reports, press releases and official publications.
                 """),
             backstory=dedent("""
-                Armed with analytical skills and strategic data gathering capabilities, the Account Researcher identifies and structures key information, 
-                setting the stage for in-depth analysis and strategic decisions.
-                """),
+                As an Account Researcher, you are armed with strong analytical skills and a strategic approach to data gathering, the Account Researcher specializes 
+                in uncovering and structuring key operational information. This foundational stage sets the groundwork for in-depth analysis and strategic decisions, 
+                leveraging only the most official and relevant data sources.
+            """),
             tools=[self.searchExaTool],  
             llm=self.llm,
             verbose=True,
