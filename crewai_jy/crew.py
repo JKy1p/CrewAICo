@@ -23,15 +23,21 @@ class AccountResearchCrew:
 
         report_writer = agents.report_writer(target_account, topics)
         research_manager = agents.research_manager(target_account, topics)
+        strategy_researcher = agents.strategy_researcher() 
         account_researcher = agents.account_researcher()
 
         research_account_tasks = [
-            tasks.research_account(account_researcher, target_account, topics)
+            tasks.research_account(account_researcher, topic, target_account)
+            for topic in topics
+        ]
+        
+        research_strategy_tasks = [
+            tasks.research_strategy(strategy_researcher, target_account, topic, research_account_tasks)  
             for topic in topics
         ]
 
         manage_research_tasks = [
-            tasks.manage_research(research_manager, target_account, topics, research_account_tasks)  
+            tasks.manage_research(research_manager, target_account, topic, research_account_tasks + research_strategy_tasks)  
             for topic in topics
         ]
         
@@ -41,7 +47,7 @@ class AccountResearchCrew:
         
         self.crew = Crew(
             agents=[report_writer, research_manager, account_researcher],
-            tasks=[*research_account_tasks, *manage_research_tasks, write_report_task],
+            tasks=[*research_account_tasks, *research_strategy_tasks, *manage_research_tasks, write_report_task],
             verbose=2,
         )
 

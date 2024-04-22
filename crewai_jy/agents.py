@@ -38,34 +38,53 @@ class AccountResearchAgents():
     def research_manager (self, target_account: str, topics: List[str]) -> Agent:
         return Agent(
             role="Research Manager",
-            goal=dedent(f"""\
-                    Direct and enhance the research process for the {target_account}, refining the collected data and guiding the development of comprehensive topics. 
-                    It is your responsibility to set the topic objectives, review researcher outputs, and identify strategic keywords for further research queries. This 
-                    ensure that all subtopics align with your overarching topic goals.
+            goal=dedent(f"""
+                Direct and enhance the research process for the {target_account}, refining the collected data and guiding the development of comprehensive topics. 
+                It is your responsibility to set the topic objectives, review researcher outputs, and identify strategic keywords for further research queries. This 
+                ensure that all subtopics align with your overarching topic goals.
                 """),
             backstory=dedent("""\
-                    As a Research Manager, your role combines strategic oversight with expert knowledge in operations and strategy analysis. You guide the development 
-                    of the report structure and content, ensuring that all research supports topic objects. Your critical evaluations of initial research outputs bridge 
-                    the gap between raw data and actionable insights, directing the research focus to meet the objectives you have established for each topic.
+                As a Research Manager, your role combines oversight of research outcome with expert knowledge in operations and strategy analysis. You guide the development 
+                of the report structure and content, ensuring that all research supports topic objects. Your critical evaluations of initial research outputs bridge 
+                the gap between raw data and actionable insights, directing the research focus to meet the objectives you have established for each topic.
                 """),
             llm=self.llm,
             verbose=True,
             allow_delegation=True
         )
     
+    @traceable(name="strategy researcher", run_type="llm", process_inputs=debug_process_inputs)    
+    def strategy_researcher(self) -> Agent:   
+        return Agent(
+            role="AI/ML Strategy Researcher",
+            goal=dedent("""
+                Investigate and gather strategic insights specifically tailored to address actionable opportunities within {target_account}'s 
+                operations. Specific sites for source information include McKinsey Quantum Black, Deloitte, KPMG, PwC, BCG, and Accenture.
+                """),
+            backstory=dedent("""
+                As a Strategy Researcher, you transform operational insights into strategic initiatives using your deep understanding of industry trends and 
+                data-driven analysis. This vital role develops forward-looking strategies that are effective and actionable, relying on the most relevant and 
+                reliable data.
+                """),
+            tools=[self.searchExaTool],  
+            llm=self.llm,
+            verbose=True,
+            allow_delegation=True
+        )
+
+    
     @traceable(name="account researcher", run_type="llm", process_inputs=debug_process_inputs)    
     def account_researcher(self) -> Agent:   
         return Agent(
             role="Account Researcher",
-            goal=dedent("""\
-                Gather comprehensive operational data on {target_account} from specified research {topics}, focusing on the most credible and current sources 
-                such as the company's website, latest annual reports, press releases and official publications.
+            goal=dedent("""Gather comprehensive operational data on {target_account} on specified research {topics}, focusing on the most credible and current 
+                sources such as the company's website, latest annual reports, press releases and official publications.
                 """),
             backstory=dedent("""
                 As an Account Researcher, you are armed with strong analytical skills and a strategic approach to data gathering, the Account Researcher specializes 
                 in uncovering and structuring key operational information. This foundational stage sets the groundwork for in-depth analysis and strategic decisions, 
                 leveraging only the most official and relevant data sources.
-            """),
+                """),
             tools=[self.searchExaTool],  
             llm=self.llm,
             verbose=True,

@@ -9,8 +9,7 @@ from langsmith import wrappers, traceable
 
 @traceable
 class AccountResearchTasks():
-
-    def __init__(self, job_id):
+    def __init__(self, job_id: str):
         self.job_id = job_id
 
     def append_event_callback(self, task_output):
@@ -18,12 +17,13 @@ class AccountResearchTasks():
         append_event(self.job_id, task_output.exported_output)
         
         
-    @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
+    # @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
     def write_report(self, agent: Agent, target_account: str, topics: list[str], tasks: list[Task]):
         return Task(            
             agent=agent,
             description=dedent(f"""
-                Create a comprehensive and structured report that integrates all collected information and insights about the {target_account}:                
+                Create a comprehensive and structured report that integrates all collected information on {target_account} with findings 
+                and insights for each of the {topics}.                
                 
                 Action Items:
                 - Set clear objectives for each section of the report at the AccountInfo level, ensuring comprehensive coverage of all topics.
@@ -44,45 +44,71 @@ class AccountResearchTasks():
             output_json=AccountInfo,
         )
     
-    @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
-    def manage_research(self, agent: Agent, target_account: str, topics: list[str], tasks: list[Task]):
+    # @traceable(name="review research", run_type="prompt", process_inputs=debug_process_inputs)    
+    def manage_research(self, agent: Agent, target_account: str, topic: str, tasks: list[Task]):
         return Task(            
             description=dedent(f"""
-                For the {target_account}, define the research objectives for each of the {topics}, then manage and refine the research process. 
-                Ensure that all collected subtopic data supports your objectives by providing strategic oversight and detailed feedback to shape 
-                the research direction and outputs.                
+                For the {target_account}, establish research objectives for each {topic}, and oversee the integration of account and strategy 
+                research, ensuring operational data and strategic insights are seamlessly combined. Monitor all subtopic data collection to align 
+                with your objectives, providing specific guidance and feedback to direct research outcomes effectively.                
                 
                 Action Items:
                 1. Define Topic Research Objectives:
-                - Establish clear and strategic objectives for each topic related to the {target_account}.
-                - Communicate these objectives to the Account Researcher to guide their data gathering process.
+                - Establish clear and strategic objectives for each {topic} related to the {target_account}.
+                - Communicate these objectives to the Account and Strategic Researchers to guide their data gathering process.
                 2. Develop Subtopics to Support Topics:
                 - Evaluate the initial data collected to ensure it aligns with the set topic objectives.
                 - Provide feedback that directs further data gathering and refines subtopics for alignment and depth.
-                3. Provide Strategic Oversight:
+                3. Provide Oversight:
                 - Continuously guide the Account Researcher with strategic insights and feedback.
                 - Ensure the alignment of the research with the strategic goals of the report.
-                
+
                 Guidelines:
-                - Ensure all findings are from the latest and most credible sources.
-                - Use focused keywords and queries to guide the Account Researcher in filling gaps and refining the research.
-                - Deliver concise, targeted feedback to streamline and direct research efforts                
+                - Ensure research findings are derived from the most current and credible sources.
+                - Use focused keywords and strategic queries to guide detailed research efforts.
+                - Maintain a critical evaluation of all research outputs to ensure alignment with the set objectives.
                 """),            
             agent=agent,
-            expected_output=dedent(
-                """A well-defined TopicInfo model that encapsulates coherent subtopics aligned with clearly established objectives 
-                for comprehensive reporting.."""),
+            expected_output=dedent(f"""
+                A well-defined TopicInfo model that encapsulates coherent subtopics, aligning operational data with strategic 
+                opportunities for comprehensive reporting."""),
             callback=self.append_event_callback,
             context=tasks,
             output_json=TopicInfo,
         )
 
-    @traceable(name="research account", run_type="retriever", process_inputs=debug_process_inputs)    
-    def research_account(self, agent: Agent, target_account: str, topics: list[str]):
+    # @traceable(name="research strategy", run_type="retriever", process_inputs=debug_process_inputs)    
+    def research_strategy(self, agent: Agent, target_account: str, topic: str, tasks: list[Task]):
         return Task(
             description=dedent(f"""
-                Conduct thorough research to gather detailed operational information for {target_account} from specified {topics}. 
-                Ensure the process focuses on the most authoritative sources to support insightful analysis.
+                Research and compile strategic initiatives relevant to {target_account}'s using authoritative sources.
+        
+                Action Items:
+                - Gather insights from McKinsey Quantum Black, Deloitte, KPMG, PwC, BCG, and Accenture focused on industry analysis.
+                - Align your research with the objectives for each {topic} as communicated by the Research Manager.
+                - Prioritize recent studies, white papers, and reports discussing relevant solutions.
+                - Submit initial findings for review and refine based on feedback from the Research Manager.
+        
+                Guidelines:
+                - Ensure all sources are recent and reputable, providing detailed insights into real world applications.
+                - Use targeted searches and keywords to explore specific solutions for identified operational challenges.
+                """),
+            agent=agent,
+            expected_output=dedent("""
+                A detailed compilation of `SubTopic` models summarizing detailing AI/ML strategies within the {target_account}'s industry, each enriched 
+                with strategically gathered information from primary sources."""),
+            callback=self.append_event_callback,
+            context=tasks,
+            output_json=SubTopic,
+            async_execution=True
+        )
+
+    # @traceable(name="research account", run_type="retriever", process_inputs=debug_process_inputs)    
+    def research_account(self, agent: Agent, target_account: str, topic: str):
+        return Task(
+            description=dedent(f"""
+                Conduct thorough research to gather detailed operational information for {target_account} for each {topic} following 
+                direction from the research manager. Ensure the process focuses on the most authoritative sources to support insightful analysis.
                                 
                 Action Items:
                 - Prioritize information from the company's official website, latest annual report, recent press releases, and other 
@@ -93,7 +119,7 @@ class AccountResearchTasks():
                 this ensures comprehensive coverage of each topic.
                 """),
             agent=agent,
-            expected_output=dedent(f"""
+            expected_output=dedent("""
                 A detailed compilation of `SubTopic` models summarizing key operational data about {target_account}, each enriched 
                 with strategically gathered information from primary sources. ."""),
             callback=self.append_event_callback,

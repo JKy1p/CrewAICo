@@ -1,4 +1,5 @@
 from typing import List, Union, Optional, Dict
+from urllib.parse import quote
 from pydantic import BaseModel, HttpUrl
 
 
@@ -10,9 +11,9 @@ class Source(BaseModel):
     year: Optional[int] = None
 
     def formatted_source(self) -> str:
-        # Markdown hyperlink format: [Title](URL)
-        return f"[{self.title}]({self.url})" + (f", {self.year}" if self.year is not None else "")
-
+        safe_url = quote(str(self.url), safe="/:[]@!$&'()*+,;=")
+        return f"[{self.title}]({safe_url})" + (f", {self.year}" if self.year is not None else "")
+    
 # Holds detailed information with highlights and sources
 class DetailedInfo(BaseModel):
     description: str
@@ -22,8 +23,8 @@ class DetailedInfo(BaseModel):
 
     # Method to add source information in the specified format
     def add_source_info(self):
-        # This will insert the formatted source info for each source associated with the detailed info
-        self.description += ' '.join(source.formatted_source() for source in self.sources)
+        # Ensure URLs are appended correctly
+        self.description += ' ' + ' '.join(source.formatted_source() for source in self.sources)
 
 # Represents a subtopic with its detailed information
 class SubTopic(BaseModel):
